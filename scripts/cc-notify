@@ -1,0 +1,12 @@
+#!/bin/sh
+# Claude Code "needs you" hook entrypoint (Notification event).
+# Announces the session name and posts a clickable banner.
+
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+. "$SCRIPT_DIR/lib.sh"
+
+cc_read_payload
+cc_should_skip && exit 0
+
+cc_notify_banner "needs you"
+cc_say "$NEEDS_VOICE" "$NEEDS_PHRASE"

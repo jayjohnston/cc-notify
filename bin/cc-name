@@ -1,0 +1,31 @@
+#!/bin/sh
+# Name (or rename) the CURRENT Claude session from within it.
+#
+# Run from the Claude input box with a leading bang:
+#   !cc-name perf-pass
+#
+# Stores the spoken/displayed name and (for iTerm) this tab's stable session id,
+# both keyed by the Claude session id, so the notification announces the right
+# name and the click jumps to the right tab. Takes effect on the next event.
+
+name="$*"
+[ -z "$name" ] && { echo "usage: cc-name <name>"; exit 1; }
+
+sid="$CLAUDE_CODE_SESSION_ID"
+[ -z "$sid" ] && {
+  echo "cc-name: CLAUDE_CODE_SESSION_ID unset — run this from inside a Claude session."
+  exit 1
+}
+
+home="${CC_NOTIFY_HOME:-$HOME/.config/cc-notify}"
+mkdir -p "$home/names" "$home/ids"
+printf '%s' "$name" > "$home/names/$sid"
+
+# The session running this command is the focused one, so its id is this tab's.
+isid=$(/usr/bin/osascript -e 'tell application "iTerm2" to tell current window to tell current session to get id' 2>/dev/null)
+if [ -n "$isid" ]; then
+  printf '%s' "$isid" > "$home/ids/$sid"
+  echo "session named: $name  (tab registered for click-to-focus)"
+else
+  echo "session named: $name"
+fi

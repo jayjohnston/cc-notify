@@ -1,0 +1,45 @@
+#!/bin/sh
+# Click action for iTerm sessions: bring iTerm2 forward and select the target
+# tab.  Args:  cc-focus <iterm_session_id> <name...>
+#
+# Selects by the stable iTerm session id when provided (title-proof); otherwise
+# best-effort by name; and always at least activates iTerm so a click is never
+# wasted.
+
+isid="$1"
+shift 2>/dev/null
+name="$*"
+
+/usr/bin/osascript - "$isid" "$name" <<'OSA' 2>/dev/null
+on run argv
+  set sid to item 1 of argv
+  set target to item 2 of argv
+  tell application "iTerm2"
+    activate
+    if sid is not "" then
+      repeat with w in windows
+        repeat with t in tabs of w
+          repeat with s in sessions of t
+            if (id of s) is sid then
+              select t
+              return
+            end if
+          end repeat
+        end repeat
+      end repeat
+    end if
+    if target is not "" then
+      repeat with w in windows
+        repeat with t in tabs of w
+          repeat with s in sessions of t
+            if (name of s) contains target then
+              select t
+              return
+            end if
+          end repeat
+        end repeat
+      end repeat
+    end if
+  end tell
+end run
+OSA

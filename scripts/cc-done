@@ -1,0 +1,19 @@
+#!/bin/sh
+# Claude Code "turn done" hook entrypoint (Stop event).
+# Plays a sound + a cheerful voice and posts a clickable banner.
+
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+. "$SCRIPT_DIR/lib.sh"
+
+cc_read_payload
+cc_should_skip && exit 0
+
+cc_notify_banner "done"
+
+# Sound then voice, sequenced and detached. Pass values as args to the inner
+# shell to avoid quoting issues with names/paths containing spaces.
+if [ -n "$DONE_VOICE" ] && say -v '?' 2>/dev/null | grep -q "^$DONE_VOICE "; then
+  nohup sh -c 'afplay "$1" 2>/dev/null; say -v "$2" "$3"' _ "$DONE_SOUND" "$DONE_VOICE" "$DONE_PHRASE" >/dev/null 2>&1 &
+else
+  nohup sh -c 'afplay "$1" 2>/dev/null; say "$2"' _ "$DONE_SOUND" "$DONE_PHRASE" >/dev/null 2>&1 &
+fi

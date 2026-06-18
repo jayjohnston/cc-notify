@@ -1,0 +1,11 @@
+{
+  "name": "cc-notify",
+  "owner": { "name": "Jay Johnston" },
+  "plugins": [
+    {
+      "name": "cc-notify",
+      "source": "./",
+      "description": "Spoken + banner notifications with click-to-focus the right iTerm tab / VS Code window. macOS only."
+    }
+  ]
+}
