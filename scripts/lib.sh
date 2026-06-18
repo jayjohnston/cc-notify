@@ -9,8 +9,10 @@ CC_NOTIFY_HOME="${CC_NOTIFY_HOME:-$HOME/.config/cc-notify}"
 : "${NEEDS_VOICE:=Bad News}"
 : "${DONE_VOICE:=Good News}"
 : "${DONE_SOUND:=/System/Library/Sounds/Glass.aiff}"
-: "${NEEDS_PHRASE:=Claude}"
-: "${DONE_PHRASE:=Claude}"
+# Spelled "Clawed" on purpose: macOS `say` reads "Claude" the French way
+# ("Clohd"). Override in config.sh if you want something else.
+: "${NEEDS_PHRASE:=Clawed}"
+: "${DONE_PHRASE:=Clawed}"
 : "${VSCODE_BUNDLE_ID:=com.microsoft.VSCode}"
 
 # Reads the hook payload from stdin and sets: payload cwd sid name itermid

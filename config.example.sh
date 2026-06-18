@@ -18,8 +18,10 @@
 # DONE_SOUND="/System/Library/Sounds/Glass.aiff"
 
 # What each alert speaks. Keep short; the banner still shows the session name.
-# NEEDS_PHRASE="Claude"
-# DONE_PHRASE="Claude"
+# Default is "Clawed" so macOS `say` pronounces it right ("Claude" comes out
+# French-ish, "Clohd").
+# NEEDS_PHRASE="Clawed"
+# DONE_PHRASE="Clawed"
 
 # Bundle id activated on click for VS Code sessions.
 # VSCODE_BUNDLE_ID="com.microsoft.VSCode"
