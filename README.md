@@ -88,6 +88,16 @@ Edit `~/.config/cc-notify/config.sh` (created by `install.sh`). You can change t
 - Tab-jump targets iTerm2; other terminals fall back to just speaking + a banner.
 - Precise tab-jump needs the tab registered (`cc-name`); otherwise the click just focuses the app.
 
+## Security
+
+- **No network calls, no telemetry** — everything runs locally.
+- The plugin runs its bundled shell scripts on every `Notification`/`Stop` event and uses macOS
+  Automation to focus iTerm2 / VS Code. It's all in `scripts/` — review before installing.
+- The banner's **click action executes only a fixed script path plus the Claude session id** (a
+  UUID). Session names and directory names are passed to AppleScript as arguments, never placed in a
+  shell-evaluated string, so a hostile name cannot inject commands.
+- State is plain files under `~/.config/cc-notify` (the names you set and iTerm tab ids).
+
 ## License
 
 MIT

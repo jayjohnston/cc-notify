@@ -1,26 +1,34 @@
 #!/bin/sh
-# Click action for iTerm sessions: bring iTerm2 forward and select the target
-# tab.  Args:  cc-focus <iterm_session_id> <name...>
+# Click action for iTerm sessions.  Arg:  cc-focus <claude_session_id>
 #
-# Selects by the stable iTerm session id when provided (title-proof); otherwise
-# best-effort by name; and always at least activates iTerm so a click is never
+# Resolves the registered iTerm tab id (and name, for fallback) from the
+# cc-notify state files, then hands them to AppleScript as arguments. No
+# caller-supplied or user-controlled text is ever placed in a shell-evaluated
+# context, so a hostile session name / directory name cannot inject commands.
+#
+# Behavior: select the tab by its stable iTerm session id (title-proof); else
+# best-effort by name; and always at least activate iTerm so a click is never
 # wasted.
 
-isid="$1"
-shift 2>/dev/null
-name="$*"
+sid="$1"
+home="${CC_NOTIFY_HOME:-$HOME/.config/cc-notify}"
 
-/usr/bin/osascript - "$isid" "$name" <<'OSA' 2>/dev/null
+itermid=""
+[ -n "$sid" ] && [ -f "$home/ids/$sid" ] && itermid=$(cat "$home/ids/$sid" 2>/dev/null)
+name=""
+[ -n "$sid" ] && [ -f "$home/names/$sid" ] && name=$(cat "$home/names/$sid" 2>/dev/null)
+
+/usr/bin/osascript - "$itermid" "$name" <<'OSA' 2>/dev/null
 on run argv
-  set sid to item 1 of argv
-  set target to item 2 of argv
+  set targetId to item 1 of argv
+  set targetName to item 2 of argv
   tell application "iTerm2"
     activate
-    if sid is not "" then
+    if targetId is not "" then
       repeat with w in windows
         repeat with t in tabs of w
           repeat with s in sessions of t
-            if (id of s) is sid then
+            if (id of s) is targetId then
               select t
               return
             end if
@@ -28,11 +36,11 @@ on run argv
         end repeat
       end repeat
     end if
-    if target is not "" then
+    if targetName is not "" then
       repeat with w in windows
         repeat with t in tabs of w
           repeat with s in sessions of t
-            if (name of s) contains target then
+            if (name of s) contains targetName then
               select t
               return
             end if

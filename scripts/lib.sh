@@ -61,8 +61,12 @@ cc_notify_banner() {
     nohup "$_tn" -title "Claude Code" -subtitle "$1" -message "$name" \
       -activate "$VSCODE_BUNDLE_ID" >/dev/null 2>&1 &
   else
+    # Pass only the Claude session id (a UUID, no shell metacharacters) into the
+    # executed string; cc-focus resolves the tab id/name from the state files and
+    # hands them to AppleScript as arguments. Keeps user/dir-controlled text out
+    # of any shell-evaluated context.
     nohup "$_tn" -title "Claude Code" -subtitle "$1" -message "$name" \
-      -execute "\"$SCRIPT_DIR/cc-focus\" \"$itermid\" \"$name\"" >/dev/null 2>&1 &
+      -execute "\"$SCRIPT_DIR/cc-focus\" \"$sid\"" >/dev/null 2>&1 &
   fi
 }
 
