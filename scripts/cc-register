@@ -1,0 +1,24 @@
+#!/bin/sh
+# SessionStart hook: auto-register this Claude session's iTerm tab id so the
+# notification click can jump straight to it. Runs on every start (including
+# --resume in a new tab), so the registered id never goes stale.
+#
+# Skips VS Code sessions (no iTerm tab) and skips when iTerm isn't frontmost at
+# launch (can't reliably attribute the focused tab to this session then — fall
+# back to running cc-name manually).
+
+CC_NOTIFY_HOME="${CC_NOTIFY_HOME:-$HOME/.config/cc-notify}"
+
+payload=$(cat)
+sid=$(printf '%s' "$payload" | jq -r '.session_id // empty' 2>/dev/null)
+[ -z "$sid" ] && exit 0
+[ -n "$VSCODE_PID" ] && exit 0
+
+front=$(/usr/bin/osascript -e 'tell application "System Events" to name of first application process whose frontmost is true' 2>/dev/null)
+[ "$front" = "iTerm2" ] || exit 0
+
+isid=$(/usr/bin/osascript -e 'tell application "iTerm2" to tell current window to tell current session to get id' 2>/dev/null)
+[ -z "$isid" ] && exit 0
+
+mkdir -p "$CC_NOTIFY_HOME/ids"
+printf '%s' "$isid" > "$CC_NOTIFY_HOME/ids/$sid"

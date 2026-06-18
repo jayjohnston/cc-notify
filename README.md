@@ -59,12 +59,16 @@ echo 'source "$HOME/gitrepos/cc-notify/shell/cc-notify.sh"' >> ~/.zshrc
 
 ## Usage
 
-Notifications work immediately, named by the session's directory. To give a session a real name:
+Notifications work immediately, named by the session's directory. Click-to-jump is **automatic**: a
+`SessionStart` hook registers each session's iTerm tab on launch (and again on `--resume`, so the id
+never goes stale).
+
+To give a session a real name:
 
 - **At launch:** `ccwork perf-pass` (instead of `claude`), or just run `claude` and answer the
   name prompt.
-- **Mid-session:** in the Claude input box, run `!cc-name perf-pass`. This also registers the tab so
-  the click jumps precisely (recommended once per session you want click-to-jump on).
+- **Mid-session:** in the Claude input box, run `!cc-name perf-pass`. (Also re-registers the tab —
+  handy if the session started while iTerm wasn't frontmost, so auto-registration skipped it.)
 
 ## Configure
 
@@ -73,9 +77,10 @@ Edit `~/.config/cc-notify/config.sh` (created by `install.sh`). You can change t
 
 ## How it works
 
-- The **plugin** registers a `Notification` hook (`scripts/cc-notify`) and a `Stop` hook
-  (`scripts/cc-done`). Each reads the hook's JSON (`session_id`, `cwd`), resolves the name, posts the
-  banner, and speaks — all detached so nothing blocks Claude.
+- The **plugin** registers a `Notification` hook (`scripts/cc-notify`), a `Stop` hook
+  (`scripts/cc-done`), and a `SessionStart` hook (`scripts/cc-register`, which records the launching
+  tab's iTerm id). Each reads the hook's JSON (`session_id`, `cwd`), and the notify/done scripts
+  resolve the name, post the banner, and speak — all detached so nothing blocks Claude.
 - **Names/ids** live in `~/.config/cc-notify/{names,ids}`, keyed by Claude's `session_id`, written by
   `cc-name`. The plugin and the `cc-name`/shell helpers communicate only through these files, so they
   are fully decoupled.
@@ -86,7 +91,9 @@ Edit `~/.config/cc-notify/config.sh` (created by `install.sh`). You can change t
 
 - macOS only.
 - Tab-jump targets iTerm2; other terminals fall back to just speaking + a banner.
-- Precise tab-jump needs the tab registered (`cc-name`); otherwise the click just focuses the app.
+- Precise tab-jump relies on auto-registration at session start, which needs iTerm frontmost then.
+  If you launch with another app focused, run `!cc-name` once; otherwise the click falls back to
+  just focusing iTerm.
 
 ## Security
 
