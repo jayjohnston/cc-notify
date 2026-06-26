@@ -25,3 +25,8 @@
 
 # Bundle id activated on click for VS Code sessions.
 # VSCODE_BUNDLE_ID="com.microsoft.VSCode"
+
+# Relative speech volume for spoken alerts (0.0–1.0), applied via the `[[volm]]`
+# speech command. Empty/unset = system volume. Lowers speech below the system
+# level only — it caps at system volume and cannot make speech louder than it.
+# SAY_VOLUME="0.11"

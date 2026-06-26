@@ -12,8 +12,10 @@ cc_notify_banner "done"
 
 # Sound then voice, sequenced and detached. Pass values as args to the inner
 # shell to avoid quoting issues with names/paths containing spaces.
+done_phrase="$DONE_PHRASE"
+[ -n "$SAY_VOLUME" ] && done_phrase="[[volm $SAY_VOLUME]]$DONE_PHRASE"
 if [ -n "$DONE_VOICE" ] && say -v '?' 2>/dev/null | grep -q "^$DONE_VOICE "; then
-  nohup sh -c 'afplay "$1" 2>/dev/null; say -v "$2" "$3"' _ "$DONE_SOUND" "$DONE_VOICE" "$DONE_PHRASE" >/dev/null 2>&1 &
+  nohup sh -c 'afplay "$1" 2>/dev/null; say -v "$2" "$3"' _ "$DONE_SOUND" "$DONE_VOICE" "$done_phrase" >/dev/null 2>&1 &
 else
-  nohup sh -c 'afplay "$1" 2>/dev/null; say "$2"' _ "$DONE_SOUND" "$DONE_PHRASE" >/dev/null 2>&1 &
+  nohup sh -c 'afplay "$1" 2>/dev/null; say "$2"' _ "$DONE_SOUND" "$done_phrase" >/dev/null 2>&1 &
 fi

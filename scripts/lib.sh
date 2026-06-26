@@ -14,6 +14,10 @@ CC_NOTIFY_HOME="${CC_NOTIFY_HOME:-$HOME/.config/cc-notify}"
 : "${NEEDS_PHRASE:=Clawed}"
 : "${DONE_PHRASE:=Clawed}"
 : "${VSCODE_BUNDLE_ID:=com.microsoft.VSCode}"
+# Relative speech volume applied to every spoken alert via the `[[volm]]` speech
+# command. Empty = system volume (unchanged). A value of 0.0–1.0 lowers speech
+# below the system level; it caps at system volume and cannot raise it above.
+: "${SAY_VOLUME:=}"
 
 # Reads the hook payload from stdin and sets: payload cwd sid name itermid
 #
@@ -75,9 +79,11 @@ cc_notify_banner() {
 # Speaks $2 in voice $1 if that voice is installed, else the default voice.
 # Detached so a slow novelty voice is never cut short.
 cc_say() {
+  _phrase="$2"
+  [ -n "$SAY_VOLUME" ] && _phrase="[[volm $SAY_VOLUME]]$2"
   if [ -n "$1" ] && say -v '?' 2>/dev/null | grep -q "^$1 "; then
-    nohup say -v "$1" "$2" >/dev/null 2>&1 &
+    nohup say -v "$1" "$_phrase" >/dev/null 2>&1 &
   else
-    nohup say "$2" >/dev/null 2>&1 &
+    nohup say "$_phrase" >/dev/null 2>&1 &
   fi
 }
