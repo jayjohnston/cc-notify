@@ -67,8 +67,13 @@ To give a session a real name:
 
 - **At launch:** `ccwork perf-pass` (instead of `claude`), or just run `claude` and answer the
   name prompt.
-- **Mid-session:** in the Claude input box, run `!cc-name perf-pass`. (Also re-registers the tab —
-  handy if the session started while iTerm wasn't frontmost, so auto-registration skipped it.)
+- **Mid-session:** in the Claude input box, run `/tab perf-pass` (slash command shipped by the
+  plugin), or the equivalent `!cc-name perf-pass`. (Either also re-registers the tab — handy if the
+  session started while iTerm wasn't frontmost, so auto-registration skipped it.)
+
+  `/tab` is the memorable form and needs nothing on your `PATH` — it calls the bundled `cc-name` via
+  the plugin. `!cc-name` is lighter (runs in your shell, no model turn) but requires `install.sh` to
+  have put `cc-name` on `PATH`.
 
 ## Configure
 
@@ -81,6 +86,9 @@ Edit `~/.config/cc-notify/config.sh` (created by `install.sh`). You can change t
   (`scripts/cc-done`), and a `SessionStart` hook (`scripts/cc-register`, which records the launching
   tab's iTerm id). Each reads the hook's JSON (`session_id`, `cwd`), and the notify/done scripts
   resolve the name, post the banner, and speak — all detached so nothing blocks Claude.
+- The **plugin** also ships the `/tab <name>` slash command (`commands/tab.md`), which invokes the
+  bundled `bin/cc-name` via `${CLAUDE_PLUGIN_ROOT}` — so naming works from a plain plugin install
+  without `cc-name` on `PATH`.
 - **Names/ids** live in `~/.config/cc-notify/{names,ids}`, keyed by Claude's `session_id`, written by
   `cc-name`. The plugin and the `cc-name`/shell helpers communicate only through these files, so they
   are fully decoupled.
