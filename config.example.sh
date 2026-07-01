@@ -26,6 +26,11 @@
 # Bundle id activated on click for VS Code sessions.
 # VSCODE_BUNDLE_ID="com.microsoft.VSCode"
 
+# Path to the wezterm CLI binary, for WezTerm sessions. Defaults to the
+# standard app-bundle location; override if you built from source or renamed
+# the app.
+# WEZTERM_CLI="/Applications/WezTerm.app/Contents/MacOS/wezterm"
+
 # Relative speech volume for spoken alerts (0.0–1.0), applied via the `[[volm]]`
 # speech command. Empty/unset = system volume. Lowers speech below the system
 # level only — it caps at system volume and cannot make speech louder than it.

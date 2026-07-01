@@ -2,14 +2,14 @@
 
 Audible + banner notifications for [Claude Code](https://claude.com/claude-code), so you know which
 session needs you across many tabs and projects — and clicking the banner jumps straight to the
-right iTerm tab (or raises VS Code).
+right iTerm tab or WezTerm pane (or raises VS Code).
 
 Built for running several Claude sessions at once. **macOS only.**
 
 - **Needs you** (permission prompt / question): a spoken alert + a clickable banner.
 - **Done** (turn finished): a sound + a different voice + a clickable banner.
 - **Click → focus**: iTerm sessions jump to their exact tab (by stable session id, title-proof);
-  VS Code sessions raise VS Code. Works across Spaces.
+  WezTerm sessions jump to their exact pane; VS Code sessions raise VS Code. Works across Spaces.
 - **Per-session names**: name a tab so the alert says "perf-pass" instead of the directory — even
   with multiple sessions in the same repo.
 - **Quiet when you're looking**: muted on the tab you're already viewing.
@@ -19,7 +19,7 @@ Built for running several Claude sessions at once. **macOS only.**
 - macOS, with `say`, `afplay`, `osascript` (built in).
 - [`terminal-notifier`](https://github.com/julienXX/terminal-notifier) and `jq`:
   `brew install terminal-notifier jq`
-- iTerm2 for tab-jumping (VS Code is auto-detected for its own sessions).
+- iTerm2 or WezTerm for tab/pane-jumping (VS Code is auto-detected for its own sessions).
 - Optional: the novelty voices "Bad News" / "Good News" (System Settings → Accessibility → Spoken
   Content → System Voices). Without them it falls back to the default voice.
 
@@ -93,15 +93,20 @@ Edit `~/.config/cc-notify/config.sh` (created by `install.sh`). You can change t
   `cc-name`. The plugin and the `cc-name`/shell helpers communicate only through these files, so they
   are fully decoupled.
 - **Click routing**: `scripts/cc-focus` selects the iTerm tab by its registered session id (immune to
-  Claude's auto-changing tab titles); VS Code sessions use `terminal-notifier -activate`.
+  Claude's auto-changing tab titles); WezTerm sessions run `wezterm cli activate-pane` directly
+  (its pane id is already in `$WEZTERM_PANE`, no registration needed); VS Code sessions use
+  `terminal-notifier -activate`.
 
 ## Limitations
 
 - macOS only.
-- Tab-jump targets iTerm2; other terminals fall back to just speaking + a banner.
-- Precise tab-jump relies on auto-registration at session start, which needs iTerm frontmost then.
-  If you launch with another app focused, run `!cc-name` once; otherwise the click falls back to
-  just focusing iTerm.
+- Tab/pane-jump targets iTerm2 and WezTerm; other terminals fall back to just speaking + a banner.
+- Precise iTerm tab-jump relies on auto-registration at session start, which needs iTerm frontmost
+  then. If you launch with another app focused, run `!cc-name` once; otherwise the click falls back
+  to just focusing iTerm. WezTerm needs no registration (its pane id is always in `$WEZTERM_PANE`).
+- WezTerm's "quiet when you're looking" check can't see across multiple WezTerm windows — it only
+  knows whether *a* pane is the one Claude is running in, not whether that pane's window is the
+  frontmost one.
 
 ## Security
 
