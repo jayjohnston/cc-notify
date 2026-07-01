@@ -92,8 +92,11 @@ cc_notify_banner() {
   elif [ -n "$WEZTERM_PANE" ] && _wt=$(_wezterm_cli) && [ -n "$_wt" ]; then
     # $WEZTERM_PANE is a plain integer set by wezterm itself (not
     # user-controlled), so it's safe to interpolate into the executed string.
+    # `activate-pane` alone only tells the wezterm-gui mux which pane to show;
+    # it doesn't necessarily raise/activate the app across macOS Spaces the
+    # way iTerm2's AppleScript `activate` does. `open -a` does that part first.
     nohup "$_tn" -title "Claude Code" -subtitle "$1" -message "$name" \
-      -execute "\"$_wt\" cli activate-pane --pane-id $WEZTERM_PANE" >/dev/null 2>&1 &
+      -execute "open -a \"/Applications/WezTerm.app\"; \"$_wt\" cli activate-pane --pane-id $WEZTERM_PANE" >/dev/null 2>&1 &
   else
     # Pass only the Claude session id (a UUID, no shell metacharacters) into the
     # executed string; cc-focus resolves the tab id/name from the state files and
