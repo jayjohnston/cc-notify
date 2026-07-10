@@ -107,8 +107,12 @@ cc_should_skip() {
 cc_notify_banner() {
   _tn=$(command -v terminal-notifier) || return 0
   [ -z "$_tn" ] && return 0
+  # -group "$sid" replaces this session's own prior banner instead of
+  # stacking a new one, so a persistent alert style doesn't pile up
+  # duplicates while a tab goes unchecked.
   if [ -n "$VSCODE_PID" ]; then
     nohup "$_tn" -title "Claude Code" -subtitle "$1" -message "$name" \
+      -group "$sid" \
       -activate "$VSCODE_BUNDLE_ID" >/dev/null 2>&1 &
   elif [ -n "$WEZTERM_PANE" ] && _wt=$(_wezterm_cli) && [ -n "$_wt" ]; then
     # $WEZTERM_PANE and $WEZTERM_UNIX_SOCKET are set by wezterm itself (not
@@ -123,6 +127,7 @@ cc_notify_banner() {
     # guesses a socket path from its own PID and fails to connect to the mux
     # entirely (activate-pane silently does nothing).
     nohup "$_tn" -title "Claude Code" -subtitle "$1" -message "$name" \
+      -group "$sid" \
       -activate "$(_wezterm_bundle_id)" \
       -execute "WEZTERM_UNIX_SOCKET=\"$WEZTERM_UNIX_SOCKET\" \"$_wt\" cli activate-pane --pane-id $WEZTERM_PANE" >/dev/null 2>&1 &
   else
@@ -131,6 +136,7 @@ cc_notify_banner() {
     # hands them to AppleScript as arguments. Keeps user/dir-controlled text out
     # of any shell-evaluated context.
     nohup "$_tn" -title "Claude Code" -subtitle "$1" -message "$name" \
+      -group "$sid" \
       -execute "\"$SCRIPT_DIR/cc-focus\" \"$sid\"" >/dev/null 2>&1 &
   fi
 }
