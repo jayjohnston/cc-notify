@@ -14,6 +14,7 @@ CC_NOTIFY_HOME="${CC_NOTIFY_HOME:-$HOME/.config/cc-notify}"
 : "${NEEDS_PHRASE:=Clawed}"
 : "${DONE_PHRASE:=Clawed}"
 : "${VSCODE_BUNDLE_ID:=com.microsoft.VSCode}"
+: "${WEZTERM_BUNDLE_ID:=com.github.wez.wezterm}"
 : "${WEZTERM_CLI:=/Applications/WezTerm.app/Contents/MacOS/wezterm}"
 # Relative speech volume applied to every spoken alert via the `[[volm]]` speech
 # command. Empty = system volume (unchanged). A value of 0.0–1.0 lowers speech
@@ -43,9 +44,29 @@ cc_read_payload() {
 }
 
 # Echoes a runnable `wezterm` CLI path, or nothing if WezTerm isn't installed.
+# Prefers the CLI sitting next to the actually-running gui binary ($WEZTERM_
+# EXECUTABLE_DIR, set by wezterm itself) over the configured/default path, so
+# a differently-named build (e.g. a "WezTerm-dev" fork installed alongside
+# the regular app) is talked to via its own binary/mux socket instead of
+# accidentally connecting to (or auto-starting) the other one.
 _wezterm_cli() {
+  [ -n "$WEZTERM_EXECUTABLE_DIR" ] && [ -x "$WEZTERM_EXECUTABLE_DIR/wezterm" ] && { printf '%s' "$WEZTERM_EXECUTABLE_DIR/wezterm"; return; }
   [ -x "$WEZTERM_CLI" ] && { printf '%s' "$WEZTERM_CLI"; return; }
   command -v wezterm 2>/dev/null
+}
+
+# Echoes the bundle id of the actually-running wezterm app, derived from
+# $WEZTERM_EXECUTABLE_DIR (two levels up from Contents/MacOS is the .app).
+# Falls back to the configured/default WEZTERM_BUNDLE_ID. Same reasoning as
+# _wezterm_cli: a renamed/forked build has its own bundle id, and activating
+# the wrong one raises/launches the wrong app.
+_wezterm_bundle_id() {
+  if [ -n "$WEZTERM_EXECUTABLE_DIR" ]; then
+    _app=$(cd "$WEZTERM_EXECUTABLE_DIR/../.." 2>/dev/null && pwd)
+    _id=$(defaults read "$_app/Contents/Info" CFBundleIdentifier 2>/dev/null)
+    [ -n "$_id" ] && { printf '%s' "$_id"; return; }
+  fi
+  printf '%s' "$WEZTERM_BUNDLE_ID"
 }
 
 # Returns 0 (skip the alert) only when you're already looking at this session's
@@ -68,12 +89,12 @@ cc_should_skip() {
     wezterm-gui)
       _wt=$(_wezterm_cli)
       [ -n "$_wt" ] && [ -n "$WEZTERM_PANE" ] || return 1
-      # ponytail: matches "is this pane active in its own tab", not "is its
-      # window the frontmost one" (wezterm's CLI has no cross-window focus
-      # query). Upgrade path: cross-check window_id against the OS-focused
-      # window if multi-window false-skips turn out to matter in practice.
-      _active=$("$_wt" cli list --format json 2>/dev/null | jq -r --arg p "$WEZTERM_PANE" '.[] | select((.pane_id|tostring)==$p) | .is_active')
-      [ "$_active" = "true" ] && return 0
+      # `cli list`'s per-pane is_active is true for every tab's last-focused
+      # pane simultaneously (it does not mean "the tab you're looking at"), so
+      # it can't tell tabs apart. list-clients' focused_pane_id is the single
+      # pane actually focused in the GUI right now, so use that instead.
+      _focused=$("$_wt" cli list-clients --format json 2>/dev/null | jq -r '.[0].focused_pane_id')
+      [ "$_focused" = "$WEZTERM_PANE" ] && return 0
       ;;
   esac
   return 1
@@ -90,13 +111,20 @@ cc_notify_banner() {
     nohup "$_tn" -title "Claude Code" -subtitle "$1" -message "$name" \
       -activate "$VSCODE_BUNDLE_ID" >/dev/null 2>&1 &
   elif [ -n "$WEZTERM_PANE" ] && _wt=$(_wezterm_cli) && [ -n "$_wt" ]; then
-    # $WEZTERM_PANE is a plain integer set by wezterm itself (not
-    # user-controlled), so it's safe to interpolate into the executed string.
-    # `activate-pane` alone only tells the wezterm-gui mux which pane to show;
-    # it doesn't necessarily raise/activate the app across macOS Spaces the
-    # way iTerm2's AppleScript `activate` does. `open -a` does that part first.
+    # $WEZTERM_PANE and $WEZTERM_UNIX_SOCKET are set by wezterm itself (not
+    # user-controlled), so it's safe to interpolate them into the executed
+    # string. terminal-notifier's own -activate raises the app (and switches
+    # macOS Spaces) as part of handling the click; shelling out to `open -a`
+    # inside -execute instead doesn't reliably carry that same
+    # click-activation privilege, which was letting the Space switch win the
+    # race against activate-pane's tab switch. -execute then only has to pick
+    # the tab. terminal-notifier runs -execute as its own GUI process's child,
+    # with none of wezterm's env vars, so without WEZTERM_UNIX_SOCKET the CLI
+    # guesses a socket path from its own PID and fails to connect to the mux
+    # entirely (activate-pane silently does nothing).
     nohup "$_tn" -title "Claude Code" -subtitle "$1" -message "$name" \
-      -execute "open -a \"/Applications/WezTerm.app\"; \"$_wt\" cli activate-pane --pane-id $WEZTERM_PANE" >/dev/null 2>&1 &
+      -activate "$(_wezterm_bundle_id)" \
+      -execute "WEZTERM_UNIX_SOCKET=\"$WEZTERM_UNIX_SOCKET\" \"$_wt\" cli activate-pane --pane-id $WEZTERM_PANE" >/dev/null 2>&1 &
   else
     # Pass only the Claude session id (a UUID, no shell metacharacters) into the
     # executed string; cc-focus resolves the tab id/name from the state files and

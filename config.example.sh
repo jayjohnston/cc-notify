@@ -26,6 +26,9 @@
 # Bundle id activated on click for VS Code sessions.
 # VSCODE_BUNDLE_ID="com.microsoft.VSCode"
 
+# Bundle id activated on click for WezTerm sessions.
+# WEZTERM_BUNDLE_ID="com.github.wez.wezterm"
+
 # Path to the wezterm CLI binary, for WezTerm sessions. Defaults to the
 # standard app-bundle location; override if you built from source or renamed
 # the app.
