@@ -20,6 +20,10 @@ CC_NOTIFY_HOME="${CC_NOTIFY_HOME:-$HOME/.config/cc-notify}"
 # command. Empty = system volume (unchanged). A value of 0.0–1.0 lowers speech
 # below the system level; it caps at system volume and cannot raise it above.
 : "${SAY_VOLUME:=}"
+# When set (to anything), appends every raw hook payload to
+# $CC_NOTIFY_HOME/debug.log. Off by default so nobody accumulates an
+# unbounded log without knowing; turn it on in config.sh while diagnosing.
+: "${CC_NOTIFY_DEBUG:=}"
 
 # Reads the hook payload from stdin and sets: payload cwd sid name itermid
 #
@@ -27,6 +31,7 @@ CC_NOTIFY_HOME="${CC_NOTIFY_HOME:-$HOME/.config/cc-notify}"
 # the shell add-on) -> the working-directory basename.
 cc_read_payload() {
   payload=$(cat)
+  [ -n "$CC_NOTIFY_DEBUG" ] && printf '%s\t%s\n' "$(date)" "$payload" >> "$CC_NOTIFY_HOME/debug.log"
   cwd=$(printf '%s' "$payload" | jq -r '.cwd // empty' 2>/dev/null)
   sid=$(printf '%s' "$payload" | jq -r '.session_id // empty' 2>/dev/null)
 

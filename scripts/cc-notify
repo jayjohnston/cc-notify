@@ -6,6 +6,10 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 . "$SCRIPT_DIR/lib.sh"
 
 cc_read_payload
+# idle_prompt re-fires every ~7min for any tab still awaiting input, whether
+# or not it's the one you currently care about; permission_prompt and other
+# notification types genuinely need you and still alert.
+[ "$(printf '%s' "$payload" | jq -r '.notification_type // empty')" = "idle_prompt" ] && exit 0
 cc_should_skip && exit 0
 
 cc_notify_banner "needs you"

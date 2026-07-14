@@ -38,3 +38,8 @@
 # speech command. Empty/unset = system volume. Lowers speech below the system
 # level only — it caps at system volume and cannot make speech louder than it.
 # SAY_VOLUME="0.11"
+
+# When set (to anything), appends every raw hook payload to
+# $CC_NOTIFY_HOME/debug.log — useful for diagnosing unexpected/false-alarm
+# notifications. Off by default so the log doesn't grow unbounded unnoticed.
+# CC_NOTIFY_DEBUG="1"

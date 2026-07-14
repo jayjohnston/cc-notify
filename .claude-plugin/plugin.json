@@ -1,7 +1,7 @@
 {
   "name": "cc-notify",
   "description": "Spoken + banner notifications when Claude needs you or finishes a turn, with click-to-focus the exact iTerm tab or VS Code window. Per-session names. macOS only.",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "author": { "name": "Jay Johnston" },
   "license": "MIT"
 }
