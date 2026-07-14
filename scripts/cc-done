@@ -8,6 +8,12 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 cc_read_payload
 cc_should_skip && exit 0
 
+# A Stop event fires whenever Claude's turn ends, even if it left a shell
+# task running in the background (e.g. it's polling a long build/test and
+# will resume later). That's not actually "done" — skip the alert so an
+# unattended agent doesn't summon you every time it checks in.
+printf '%s' "$payload" | jq -e '(.background_tasks // []) | any(.status == "running")' >/dev/null 2>&1 && exit 0
+
 cc_notify_banner "done"
 
 # Sound then voice, sequenced and detached. Pass values as args to the inner
