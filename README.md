@@ -26,7 +26,7 @@ Built for running several Claude sessions at once. **macOS only.**
 ## Install
 
 ```sh
-git clone <this-repo> ~/gitrepos/cc-notify
+git clone git@github.com:jayjohnston/cc-notify.git ~/gitrepos/cc-notify
 cd ~/gitrepos/cc-notify
 sh install.sh        # installs cc-name + config + state dirs, prints next steps
 sh doctor.sh         # checks deps + lists the macOS permissions to grant
