@@ -14,6 +14,8 @@ Built for running several Claude sessions at once. **macOS only.**
   with multiple sessions in the same repo.
 - **Quiet when you're looking**: muted on the tab you're already viewing.
 
+**Works with:** iTerm2, WezTerm, VS Code.
+
 ## Requirements
 
 - macOS, with `say`, `afplay`, `osascript` (built in).
