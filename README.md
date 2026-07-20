@@ -41,6 +41,11 @@ Then, in Claude Code, install the plugin that delivers the hooks:
 
 The plugin's hooks **merge** with any hooks you already have — they won't replace them.
 
+Run those two commands in your own personal/user-scope Claude Code session — not inside a
+shared team project's tracked `.claude/settings.json`. This is a personal, macOS-only tool;
+enabling it there just adds dead weight for teammates on other OSes and leaks your setup into
+version control.
+
 Optional shell helpers (the `ccwork` launcher and the naming prompt on plain `claude`):
 
 ```sh
