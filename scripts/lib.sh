@@ -27,15 +27,30 @@ CC_NOTIFY_HOME="${CC_NOTIFY_HOME:-$HOME/.config/cc-notify}"
 
 # Reads the hook payload from stdin and sets: payload cwd sid name itermid
 #
-# Name precedence: cc-names/<sid> (set by cc-name) -> $CC_TAB (set at launch by
-# the shell add-on) -> the working-directory basename.
+# Name precedence: WezTerm's live tab_title (see below) -> cc-names/<sid> (set
+# by cc-name) -> $CC_TAB (set at launch by the shell add-on) -> the
+# working-directory basename.
 cc_read_payload() {
   payload=$(cat)
   [ -n "$CC_NOTIFY_DEBUG" ] && printf '%s\t%s\n' "$(date)" "$payload" >> "$CC_NOTIFY_HOME/debug.log"
   cwd=$(printf '%s' "$payload" | jq -r '.cwd // empty' 2>/dev/null)
   sid=$(printf '%s' "$payload" | jq -r '.session_id // empty' 2>/dev/null)
 
-  if [ -n "$sid" ] && [ -f "$CC_NOTIFY_HOME/names/$sid" ]; then
+  # A WezTerm pane's `.title` is whatever raw OSC title the running program
+  # last wrote — Claude Code itself keeps stomping that with its own
+  # auto-generated topic, so it can't be trusted as the user's rename.
+  # `.tab_title` is WezTerm's separate override (set by `wezterm cli
+  # set-tab-title`, e.g. via the tab-title skill) and holds steady across
+  # whatever Claude Code writes underneath, so query it live instead of
+  # relying on the name cc-notify cached at launch/registration time.
+  name=""
+  if [ -n "$WEZTERM_PANE" ] && _wt=$(_wezterm_cli) && [ -n "$_wt" ]; then
+    name=$("$_wt" cli list --format json 2>/dev/null | jq -r --arg p "$WEZTERM_PANE" '.[] | select((.pane_id|tostring) == $p) | .tab_title // empty')
+  fi
+
+  if [ -n "$name" ]; then
+    :
+  elif [ -n "$sid" ] && [ -f "$CC_NOTIFY_HOME/names/$sid" ]; then
     name=$(cat "$CC_NOTIFY_HOME/names/$sid" 2>/dev/null)
   elif [ -n "$CC_TAB" ]; then
     name="$CC_TAB"

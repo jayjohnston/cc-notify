@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.2] - 2026-07-24
+
+### Fixed
+- WezTerm sessions now announce/display the tab's live `tab_title` (e.g. renamed via the tab-title skill or `wezterm cli set-tab-title`) instead of the name cached at launch/registration, which could go stale as soon as the tab was renamed later in the session.
+
 ## [0.2.0] - 2026-07-20
 
 ### Added
