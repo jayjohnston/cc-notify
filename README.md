@@ -87,6 +87,25 @@ To give a session a real name:
 Edit `~/.config/cc-notify/config.sh` (created by `install.sh`). You can change the voices, the
 "done" sound, the spoken phrases, and the VS Code bundle id. See `config.example.sh`.
 
+## Troubleshooting
+
+**It notifies me but doesn't jump to the tab:**
+
+1. Run `sh doctor.sh` — checks `terminal-notifier`/`jq` and reprints the manual permissions above.
+2. **Automation permission** (the most common cause): System Settings → Privacy & Security →
+   Automation → `terminal-notifier` must be allowed to control iTerm2 and System Events. If
+   `terminal-notifier` isn't listed there at all, the first-click prompt was probably dismissed —
+   reset it with `tccutil reset AppleEvents com.googlecode.iterm2` and click a banner again to
+   re-trigger the prompt.
+3. **Notifications permission**: System Settings → Notifications → `terminal-notifier` must be
+   allowed to show banners/alerts (not "None").
+4. **Does clicking bring iTerm2 forward at all, or does nothing happen?** Nothing happening points at
+   #2/#3. Coming forward on the *wrong* tab means the session's tab id was never registered (it was
+   launched while iTerm2 wasn't frontmost) and it also has no name set — run `!cc-name <name>` (or
+   `/tab <name>`) once and it'll jump correctly from then on (see Limitations).
+5. **Spaces**: if iTerm2 lives on another Space, confirm the Mission Control setting above is
+   enabled — otherwise a click can bring iTerm2 forward without switching you to its Space.
+
 ## How it works
 
 - The **plugin** registers a `Notification` hook (`scripts/cc-notify`), a `Stop` hook
